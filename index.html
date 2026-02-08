@@ -510,6 +510,21 @@
 .yt-link a:hover {
   text-decoration: underline;
 }
+#yes {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+#no {
+  transition: left 0.15s ease, top 0.15s ease;
+}
+.no-message {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #ff4d6d;
+  font-style: italic;
+  min-height: 20px;
+  transition: opacity 0.3s ease;
+}
+
 
   </style>
 </head>
@@ -518,6 +533,7 @@
 
   <!-- Main Valentine Card -->
   <div class="card">
+    <div id="noMessage" class="no-message"></div>
     <div class="emoji">🦋❤️</div>
     <h2>DD!!<br>will you be my Valentine?🫣</h2>
 
@@ -558,6 +574,7 @@
     <button class="music-control" id="playBtn" style="visibility: hidden"></button >
     <div class="music-title" style="visibility: hidden">Our Song - Playing...</div>
   </div>
+
 
   <!-- Sounds -->
   <audio id="hoverSound" src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-voice-laugh-343.mp3"></audio>
@@ -674,13 +691,77 @@
     }
 
     // Mouse hover event
-    noBtn.addEventListener("mouseenter", moveNoButton);
+    //noBtn.addEventListener("mouseenter", moveNoButton);
 
     // Touch event for mobile devices
-    noBtn.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      moveNoButton();
-    });
+    // noBtn.addEventListener("touchstart", (e) => {
+    //   e.preventDefault();
+    //   moveNoButton();
+    // });
+    function escapeIfNear(e) {
+  const rect = noBtn.getBoundingClientRect();
+
+  const btnCenterX = rect.left + rect.width / 2;
+  const btnCenterY = rect.top + rect.height / 2;
+
+  const distance = Math.hypot(
+    e.clientX - btnCenterX,
+    e.clientY - btnCenterY
+  );
+
+  // distance in pixels before it runs
+  if (distance < 100) {
+    moveNoButton();
+  }
+}
+document.addEventListener("mousemove", (e) => {
+  const rect = noBtn.getBoundingClientRect();
+
+  const btnCenterX = rect.left + rect.width / 2;
+  const btnCenterY = rect.top + rect.height / 2;
+
+  const distance = Math.hypot(
+    e.clientX - btnCenterX,
+    e.clientY - btnCenterY
+  );
+
+  // how near mouse can come (increase = more impossible)
+  const dangerRadius = 220;
+
+  if (distance < dangerRadius) {
+    moveNoButton();
+  }
+});
+
+// document.addEventListener("mousemove", escapeIfNear);
+
+    // Track YES button size
+let yesScale = 1;
+
+function growYesButton() {
+  yesScale += 0.15;   // how fast it grows
+  yesBtn.style.transform = `scale(${yesScale})`;
+  yesBtn.style.boxShadow = "0 20px 45px rgba(255,77,109,0.9)";
+
+}
+
+// If user somehow tries to click NO
+noBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  growYesButton();   // YES becomes bigger 💗
+  moveNoButton();    // NO escapes again 😈
+});
+
+// For mobile
+noBtn.addEventListener("touchend", (e) => {
+  e.preventDefault();
+
+  growYesButton();
+  moveNoButton();
+});
+
 
     // Show Polaroid Card
     function showPolaroid() {
@@ -762,6 +843,16 @@
         showPolaroid();
       }, 800);
     });
+    noBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  moveNoButton();   // escape again
+});
+noBtn.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  moveNoButton();
+});
+
 
     // Close polaroid card
     polaroidClose.addEventListener('click', () => {
@@ -799,7 +890,28 @@
         isPlaying = false;
       }
     });
+const messages = [
+  "I’ll wait until your heart says yes 💗",
+  "You don’t really mean that 🙈",
+  "Nice try 😌 but destiny says YES",
+  "My answer is still you ❤️",
+  "Running won’t change my love 💞"
+];
 
+noBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  // pick random line
+  const msg = messages[Math.floor(Math.random() * messages.length)];
+  noMessage.textContent = msg;
+
+  growYesButton();   // if you added growing
+  moveNoButton();    // escape again
+});
+setTimeout(() => {
+  noMessage.textContent = "";
+}, 2000);
     // Function to create floating hearts
     function createHeart() {
       const heart = document.createElement("div");
